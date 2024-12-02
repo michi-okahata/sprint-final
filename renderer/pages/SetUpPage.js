@@ -4,6 +4,8 @@ import { useNavigate } from 'react-router-dom'
 
 import { GradientBackground, StyledAvatar, StyledTextField } from '../components/Components.js'
 
+// Need to figure out edge cases, no username after first check.
+
 export default function SetUpPage() {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
@@ -13,6 +15,11 @@ export default function SetUpPage() {
   const handlePasswordChange = (event) => setPassword(event.target.value)
 
   const handleSetUp = async () => {
+    if (username === "" || password === "") {
+      alert("Username and password cannot be.")
+      return
+    }
+
     // Validate the username
     if (/\s/.test(username)) {
       alert("Username cannot contain spaces.")
@@ -24,24 +31,11 @@ export default function SetUpPage() {
       alert("Password must be longer than 8 characters, include a number, and a special character.")
       return
     }
-  
-    try {
-      // Invoke the IPC method and log the response
-      const response = await window.ipc.invoke('test-master-pass', username, password)
-      console.log('Response from test-master-pass:', response)
-  
-      // Navigate to HomePage
-      navigate('/HomePage')
-    } catch (error) {
-      // Log and display the error
-      console.error('Error during test-master-pass invocation:', error.message)
-      if (error.response) {
-        console.error('Server Response:', error.response.data)
-      }
-      alert("An error occurred while setting up your account. Please try again.")
-    }
+
+    window.ipc.invoke('test-master-pass', username, password)
+
+    // NAVIGATE TO PASSWORD PAGE.
   }
-  
 
   return (
     <GradientBackground display="flex" justifyContent="center" alignItems="center">
@@ -67,7 +61,17 @@ export default function SetUpPage() {
             onChange={handlePasswordChange}
             fullWidth
           />
-          <Button variant="contained" color="primary" onClick={handleSetUp}>
+          <Button 
+            variant="contained" 
+            color="primary" 
+            onClick={handleSetUp}
+            sx={{
+              textTransform: 'none',
+              height: '50px',
+              borderRadius: '50px',
+              backgroundColor: '#36343A'
+            }}
+          >
             Set Up Account
           </Button>
           </Box>

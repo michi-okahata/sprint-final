@@ -5,12 +5,14 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import TestPage from './pages/TestPage.js'
 import SetUpPage from './pages/SetUpPage.js'
 import LoginPage from './pages/LoginPage.js'
+import Dashboard from './components/Sidebar.js'
 
-// To do:
-    // Master password requires 6/6 strength. Check for all possible inputs.
-    // Username and master password.
-    // This page if None are returned on startup. Otherwise Login page. Validate against, check if this is set up.
-    
+import AddPassword from './pages/AddPassword.js'
+import Passwords from './pages/Passwords.js'
+
+// TODO:
+  // Dev mode only works for renderer.
+  // BUT dashboard thing works!
     // Figure out minimum version.
       // Figure out posting to the db
     // Figure out components.
@@ -18,17 +20,18 @@ import LoginPage from './pages/LoginPage.js'
     // Figure out functions.
     // Build :)
 
+    // Search needs to first go to passwords? or after query.
+
 export default function App() {
-  const [isProfile, setProfile] = useState(false)
+  const [isProfile, setProfile] = useState(null)
 
   useEffect(() => {
-    // Limit renderer.
     const checkProfile = async () => {
       try {
         const response = await window.ipc.invoke('get-master-password')
         const username = response?.username
 
-        if (username === "undefined" || !username) {
+        if (username === 'undefined' || !username) {
           setProfile(false)
         } else {
           setProfile(true)
@@ -42,16 +45,19 @@ export default function App() {
     checkProfile()
   }, []) // Runs once.
 
-  // Works!
-  const Default = (isProfile) ? LoginPage : SetUpPage
-
+  // Everything except login/setup has sidebar, make that a layout 
+  //{isProfile ? <LoginPage /> : <SetUpPage />} 
+  //{<Navigate to="/Dashboard" />}
   return (
-    <Router>
-      <Default />
-      <Routes>
-        <Route path="/" element={<Default />} />
-        <Route path="*" element={<Navigate to="/" />} />
-      </Routes>
-    </Router>
+    <Routes>
+      <Route path="/" element={isProfile ? <LoginPage/> : <SetUpPage />} />
+      <Route path="/SetUpPage" element={<SetUpPage />} />
+      <Route path="/LoginPage" element={<LoginPage />} />
+      <Route path="/Dashboard" element={<Dashboard />}>
+        <Route index element={<TestPage />} />
+        <Route path="/Dashboard/Passwords" element={<Passwords />} />
+        <Route path="/Dashboard/AddPassword" element={<AddPassword />} />
+      </Route>
+    </Routes>
   )
 }

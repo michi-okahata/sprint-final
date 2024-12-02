@@ -53,7 +53,7 @@ const createWindow = async () => {
   })
   
 
-  ipcMain.handle('test-login', async (event, username, master_pass) => {
+  ipcMain.handle('validate-login', async (event, username, master_pass) => {
     const data = {
       master_pass: master_pass,
       username: username
@@ -77,13 +77,39 @@ const createWindow = async () => {
     }
   })
 
-  if (app.isPackaged) {
-    win.loadFile('./pack/index.html')
-    // file:///C:/Users/michi/password/sprint-final/out/sprint-final-win32-x64/resources/app.asar/file:/C:/Users/michi/password/sprint-final/out/sprint-final-win32-x64/resources/app.asar/pack/index.html
-    // await win.loadFile('./index.html')
+  ipcMain.handle('add-password', async (event, data) => {
+    try {
+      const response = await axios.post('http://localhost:5000/add_password', data)
+      console.log(response.data)
+      return(response.data)
+    } catch (error) {
+      throw error
+    }
+  })
+
+  // Deletion
+
+  // Show all
+  ipcMain.handle('display-all-passwords', async (event) => {
+    try {
+      const response = await axios.get('http://localhost:5000/display_all_passwords')
+      console.log(response.data)
+      return(response.data)
+    } catch (error) {
+      throw error
+    }
+  })
+
+  if (process.env.NODE_ENV === 'development') {
+    win.loadURL('http://localhost:3000') // Not working :( but can just localhost :).
   } else {
-    // Not packaged.
-    await win.loadURL(`file://${path.join(__dirname, '../pack', 'index.html')}`)
+    // Might be redundant.
+    if (app.isPackaged) {
+      win.loadFile('./pack/index.html')
+    } else {
+      // Not packaged.
+      await win.loadURL(`file://${path.join(__dirname, '../pack', 'index.html')}`)
+    }
   }
 }
 

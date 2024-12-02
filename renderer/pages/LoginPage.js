@@ -5,31 +5,29 @@ import { useNavigate } from 'react-router-dom'
 import { GradientBackground, StyledAvatar, StyledTextField } from '../components/Components.js'
 
 export default function LoginPage() {
-  const [login, setLogin] = useState(false)
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const navigate = useNavigate()
 
-  const handleLoginChange = () => {
-    console.log('set true')
-    setLogin(true)
-  }
   const handleUsernameChange = (event) => setUsername(event.target.value)
   const handlePasswordChange = (event) => setPassword(event.target.value)
 
   // Probably need useEffect and login/setLogin
   const handleLogin = async () => {
-    try {      
-      const response = await window.ipc.invoke('test-login', username, password)
-      const login = response?.login
+    if (username === '' || password === '') {
+      alert('Incorrect username or password.')
+      return
+    }
 
-      if (login) {
-        // NAVIGATE
-        alert("In")
+    try {      
+      const response = await window.ipc.invoke('validate-login', username, password)
+      const valid = response?.login
+
+      if (valid) {
+        alert('In')
+        navigate('/Dashboard')
       } else {
-        alert("Incorrect username or password.")
-        setUsername("")
-        setPassword()
+        alert('Incorrect username or password.')
         return
       }
     } catch (error) {
@@ -62,7 +60,18 @@ export default function LoginPage() {
             onChange={handlePasswordChange}
             fullWidth
           />
-          <Button variant="contained" color="primary" onClick={handleLogin}>
+          <Button 
+            variant="contained" 
+            color="primary" 
+            onClick={handleLogin}
+            sx={{
+              textTransform: 'none',
+              height: '50px',
+              width: '100px',
+              borderRadius: '50px',
+              backgroundColor: '#36343A'
+            }}
+          >
             Login
           </Button>
         </Box>

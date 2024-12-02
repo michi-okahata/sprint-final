@@ -295,7 +295,7 @@ def delete_password():
 @app.route('/display_all_passwords', methods=['GET'])
 def display_all_passwords():
     query = """
-    SELECT username, password FROM passwords;
+    SELECT username, password, url FROM passwords;
     """
     conn, cur = connect_db()
     if conn is None or cur is None:
@@ -312,10 +312,20 @@ def display_all_passwords():
             username_master = response_data.get('username')
             hashed_mp = response_data.get('hashed_mp')
 
+            '''
             for username, encrypted_pswd in results:
                 decrypted_pswd = decode_vault_password(encrypted_pswd, username_master, hashed_mp)
                 passwords.append((username, decrypted_pswd))
             return jsonify({"passwords": passwords}), 200
+            '''
+            for username, encrypted_pswd, url in results:  # Assuming each result also contains a `url`
+                decrypted_pswd = decode_vault_password(encrypted_pswd, username_master, hashed_mp)
+                passwords.append({
+                    "username": username,
+                    "url": url,
+                    "password": decrypted_pswd
+                })
+            return jsonify(passwords), 200
         else:
             return jsonify({"message": "No passwords found in the database."}), 404
     except Exception as e:

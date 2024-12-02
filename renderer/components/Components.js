@@ -5,10 +5,9 @@ import styled from 'styled-components'
 const GradientBackground = styled(Box)({
   width: '100%',
   height: '100vh',
-  background: 'linear-gradient(210deg, #A472CB, #5883F2)',
+  display: 'flex',
+  background: 'linear-gradient(248.88deg, #A472CB 33.63%, #5883F2 81.72%)',
 })
-
-// Sidebar
 
 // Icons
 const StyledAvatar = styled(Avatar)({
