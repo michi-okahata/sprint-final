@@ -11,7 +11,8 @@
     "pack:m": "webpack --config webpack.main.prod.config.js",
     "pack:r": "webpack --config webpack.renderer.prod.config.js",
     "package": "electron-forge package",
-    "make": "electron-forge make"
+    "make": "electron-forge make",
+    "start": "electron-forge start"
   },
   "author": "Password People",
   "license": "ISC",
@@ -28,6 +29,7 @@
     "@electron-forge/plugin-auto-unpack-natives": "^7.6.0",
     "@electron-forge/plugin-fuses": "^7.6.0",
     "@electron-forge/plugin-webpack": "^7.6.0",
+    "@electron/fuses": "^1.8.0",
     "babel-core": "^6.26.3",
     "babel-loader": "^9.2.1",
     "cross-env": "^7.0.3",
@@ -47,6 +49,7 @@
     "axios": "^1.7.8",
     "body-parser": "^1.20.3",
     "cors": "^2.8.5",
+    "electron-squirrel-startup": "^1.0.1",
     "express": "^4.21.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",

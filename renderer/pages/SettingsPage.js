@@ -3,7 +3,8 @@ import { AppBar, TextField, InputAdornment, IconButton, Drawer, List, ListItem, 
 import { Search, Lock, Security, Settings } from '@mui/icons-material';
 import { styled } from '@mui/system';
 import { useNavigate } from 'react-router-dom';
-import DeleteAllPasswordsModal from './DeleteAllPasswordsModal';
+import DeleteAllPasswordsModal from '../components/DeleteAllPasswordsModal.js';
+
 
 const GradientBackground = styled(Box)({
   height: '100vh',

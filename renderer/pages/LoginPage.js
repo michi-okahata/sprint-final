@@ -1,4 +1,4 @@
-import { Box, Button, Container, Typography } from '@mui/material'
+import { Box, Button, Container, Typography, Snackbar, Alert } from '@mui/material'
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 
@@ -7,32 +7,30 @@ import { GradientBackground, StyledAvatar, StyledTextField } from '../components
 export default function LoginPage() {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
+  const [error, setError] = useState(null)
   const navigate = useNavigate()
 
   const handleUsernameChange = (event) => setUsername(event.target.value)
   const handlePasswordChange = (event) => setPassword(event.target.value)
 
-  // Probably need useEffect and login/setLogin
   const handleLogin = async () => {
-    if (username === '' || password === '') {
-      alert('Incorrect username or password.')
+    if (username.trim() === '' || password.trim() === '') {
+      setError('Username and password cannot be empty.')
       return
     }
 
-    try {      
+    try {
       const response = await window.ipc.invoke('validate-login', username, password)
       const valid = response?.login
 
       if (valid) {
-        alert('In')
-        navigate('/Dashboard')
+        navigate('/HomePage')
       } else {
-        alert('Incorrect username or password.')
-        return
+        setError('Incorrect username or password.')
       }
     } catch (error) {
       console.error('Error logging in:', error)
-      return
+      setError('An error occurred while logging in. Please try again.')
     }
   }
 
@@ -67,7 +65,7 @@ export default function LoginPage() {
             sx={{
               textTransform: 'none',
               height: '50px',
-              width: '100px',
+              width: '100%',
               borderRadius: '50px',
               backgroundColor: '#36343A'
             }}
@@ -76,6 +74,13 @@ export default function LoginPage() {
           </Button>
         </Box>
       </Container>
+      {error && (
+        <Snackbar open={true} autoHideDuration={6000} onClose={() => setError(null)}>
+          <Alert onClose={() => setError(null)} severity="error">
+            {error}
+          </Alert>
+        </Snackbar>
+      )}
     </GradientBackground>
   )
 }

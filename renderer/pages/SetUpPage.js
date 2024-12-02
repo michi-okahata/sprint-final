@@ -1,5 +1,5 @@
 import { Box, Button, Container, Typography } from '@mui/material'
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import { GradientBackground, StyledAvatar, StyledTextField } from '../components/Components.js'
@@ -21,8 +21,6 @@ export default function SetUpPage() {
       return
     }
   
-    // Validate the username
-
     // Validate the username
     if (/\s/.test(username)) {
       alert("Username cannot contain spaces.")
@@ -46,12 +44,6 @@ export default function SetUpPage() {
       console.error('Error during setup:', error.message)
       alert("An error occurred while setting up your account. Please try again.")
     }
-  }
-  
-
-    window.ipc.invoke('test-master-pass', username, password)
-
-    // NAVIGATE TO PASSWORD PAGE.
   }
 
   return (
@@ -91,7 +83,7 @@ export default function SetUpPage() {
           >
             Set Up Account
           </Button>
-          </Box>
+        </Box>
       </Container>
     </GradientBackground>
   )

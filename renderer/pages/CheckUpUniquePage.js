@@ -55,7 +55,7 @@ const CheckupButton = styled(Button)({
 });
 
 const CheckUpUniquePage = () => {
-  const navigate = useNavigate(); // Hook for navigation
+  const navigate = useNavigate();
   const [nonUniquePasswords, setNonUniquePasswords] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 

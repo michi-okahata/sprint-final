@@ -11,19 +11,19 @@ import DeleteAllPasswordsModal from './components/DeleteAllPasswordsModal.js';
 // import AddPassword from './pages/AddPassword.js'
 // import Passwords from './pages/Passwords.js'
 
-import AddNewPasswordPage from './AddNewPasswordPage';
-import AddPassword from './AddPassword';
-import CheckUpPage from './CheckUpPage';
-import CheckUpStrengthPage from './CheckUpStrengthPage';
-import CheckUpUniquePage from './CheckUpUniquePage';
-import DeletePassword from './DeletePassword';
-import EditPassword from './EditPassword';
-import HomePage from './HomePage';
-import LoginPage from './LoginPage';
-import Passwords from './Passwords';
-import SettingsPage from './SettingsPage';
-import SetUpPage from './SetUpPage';
-import ViewPassword from './ViewPassword';
+import AddNewPasswordPage from './pages/AddNewPasswordPage.js';
+import AddPassword from './pages/AddPassword.js';
+import CheckUpPage from './pages/CheckUpPage.js';
+import CheckUpStrengthPage from './pages/CheckUpStrengthPage.js';
+import CheckUpUniquePage from './pages/CheckUpUniquePage.js';
+import DeletePassword from './pages/DeletePassword.js';
+import EditPassword from './pages/EditPassword.js';
+import HomePage from './pages/HomePage.js';
+import LoginPage from './pages/LoginPage.js';
+import Passwords from './pages/Passwords.js';
+import SettingsPage from './pages/SettingsPage.js';
+import SetUpPage from './pages/SetUpPage.js';
+import ViewPassword from './pages/ViewPassword.js';
 
 // TODO:
 // Dev mode only works for renderer.
