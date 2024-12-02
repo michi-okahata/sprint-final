@@ -15,24 +15,43 @@ export default function SetUpPage() {
   const handlePasswordChange = (event) => setPassword(event.target.value)
 
   const handleSetUp = async () => {
-    if (username === "" || password === "") {
-      alert("Username and password cannot be.")
+    // Ensure username and password are non-empty
+    if (username.trim() === "" || password.trim() === "") {
+      alert("Username and password cannot be empty.")
       return
     }
+  
+    // Validate the username
 
+    // Validate the username
     if (/\s/.test(username)) {
       alert("Username cannot contain spaces.")
       return
     }
-
+  
+    // Validate the password
     if (password.length <= 8 || !/\d/.test(password) || !/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
       alert("Password must be longer than 8 characters, include a number, and a special character.")
       return
     }
+  
+    try {
+      // Invoke IPC method to test master password
+      const response = await window.ipc.invoke('test-master-pass', username, password)
+      console.log('Response from test-master-pass:', response)
+  
+      // Navigate to password page upon success
+      navigate('/HomePage')
+    } catch (error) {
+      console.error('Error during setup:', error.message)
+      alert("An error occurred while setting up your account. Please try again.")
+    }
+  }
+  
 
     window.ipc.invoke('test-master-pass', username, password)
 
-    // Navigate to app.
+    // NAVIGATE TO PASSWORD PAGE.
   }
 
   return (
