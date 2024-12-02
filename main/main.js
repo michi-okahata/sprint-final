@@ -1,7 +1,9 @@
 const { app, BrowserWindow, ipcMain } = require('electron')
 const path = require('node:path')
-const { spawn } = require('child_process');
-const axios = require('axios');
+const { spawn } = require('child_process')
+const axios = require('axios')
+
+const os = require('os')
 
 /*
 Notes
@@ -40,13 +42,16 @@ const createWindow = async () => {
       username: username
     }
     try {
+      console.log('Sending data to /add_master_password:', data)
       const response = await axios.post('http://localhost:5000/add_master_password', data)
-      //const response = await axios.get('http://localhost:5000/api/test')
-      console.log(response.data)
+      console.log('Response from /add_master_password:', response.data)
+      return response.data
     } catch (error) {
+      console.error('Error in test-master-pass:', error.response?.data || error.message)
       throw error
     }
   })
+  
 
   ipcMain.handle('test-login', async (event, username, master_pass) => {
     const data = {
@@ -56,7 +61,7 @@ const createWindow = async () => {
     try {
       const response = await axios.post('http://localhost:5000/validate_login', data)
       console.log(response.data)
-      return(response.data)
+      return response.data
     } catch (error) {
       throw error
     }
@@ -85,9 +90,23 @@ const createWindow = async () => {
 let flaskProcess
 
 const startFlaskPython = () => {
-  // Virtual environment, Windows.
-  const venvPath = path.join(__dirname, '../win_venv') // Windows.
-  const pythonPath = path.join(venvPath, 'Scripts', 'python.exe') // Windows.
+  // Virtual environment.
+
+  const isWindows = process.platform === 'win32'
+  const isMac = process.platform === 'darwin' || os.platform() === 'darwin'
+
+  const venvPath = isWindows
+  ? path.join(__dirname, '../win_venv') // Windows
+  : isMac
+  ? path.join(__dirname, '../venv') // macOS
+  : path.join(__dirname, '../other_venv') // Other platformss
+
+  const pythonPath = isWindows
+  ? path.join(venvPath, 'Scripts', 'python.exe') // Windows
+  : isMac
+  ? path.join(venvPath, 'bin', 'python3') // macOS
+  : path.join(venvPath, 'bin', 'python3') // Default for non-Windows
+
   const flaskPath = path.join(__dirname, '../db/db_flask_server.py')
 
   console.log(".py")
@@ -99,11 +118,15 @@ const startFlaskPython = () => {
       initDB()
     }
   })
+
+  flaskProcess.stderr.on('data', (data) => {
+    console.error(`Flask error: ${data}`)
+  })
 }
 
 let exePath
 if (app.isPackaged) {
-  exePath = path.join(process.resourcesPath, 'db_flask_server.exe');
+  exePath = path.join(process.resourcesPath, 'db_flask_server.exe')
 } else {
   exePath = path.join(__dirname, '../db/dist/', 'db_flask_server.exe')
 }
@@ -116,6 +139,10 @@ const startFlaskExe = () => {
     if (data.includes('* Serving Flask app \'db_flask_server\'')) {
       initDB()
     }
+  })
+
+  flaskProcess.stderr.on('data', (data) => {
+    console.error(`Flask error: ${data}`)
   })
 }
 
