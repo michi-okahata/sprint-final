@@ -1,25 +1,24 @@
-const { app, BrowserWindow, ipcMain } = require('electron')
-const path = require('node:path')
-const { spawn } = require('child_process')
-const axios = require('axios')
+// chat gpt update # 1
+// this is the same as main.js_claire_new.py
+const { app, BrowserWindow, ipcMain } = require('electron');
+const path = require('node:path');
+const { spawn } = require('child_process');
+const axios = require('axios');
 
-const os = require('os')
+const SERVER_BASE_URL = 'http://127.0.0.1:5000';
 
 /*
 Notes
-No print functions in servers. Messes with flask API.
-Still an UnhandledPromiseRejectionWarning somewhere.
+No print functions in servers. Messes with Flask API.
+Improved error handling for Axios requests.
 */
 
 ipcMain.handle('load-dependencies', async (_event) => {
-  const dependencies = require('../package.json').devDependencies
+  const dependencies = require('../package.json').devDependencies;
   return Object.entries(dependencies).map(([key, value]) => {
-    return {
-      name: key,
-      version: value
-    }
-  })
-})
+    return { name: key, version: value };
+  });
+});
 
 const createWindow = async () => {
   const win = new BrowserWindow({
@@ -28,195 +27,170 @@ const createWindow = async () => {
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
-      preload: path.join(__dirname, 'preload.js')
-    }
-  })
+      preload: path.join(__dirname, 'preload.js'),
+    },
+  });
 
   ipcMain.on('set-title', (event, title) => {
-    win.setTitle(title)
-  })
+    win.setTitle(title);
+  });
 
-  ipcMain.handle('test-master-pass', async (event, username, master_pass) => {
-    const data = {
-      master_pass: master_pass,
-      username: username
-    }
+  ipcMain.handle('test-master-pass', async (_event, username, master_pass) => {
+    const data = { master_pass, username };
     try {
-      console.log('Sending data to /add_master_password:', data)
-      const response = await axios.post('http://localhost:5000/add_master_password', data)
-      console.log('Response from /add_master_password:', response.data)
-      return response.data
+      const response = await axios.post(`${SERVER_BASE_URL}/add_master_password`, data);
+      console.log(response.data);
     } catch (error) {
-      console.error('Error in test-master-pass:', error.response?.data || error.message)
-      throw error
+      console.error('Error in test-master-pass:', error.message);
+      return { error: error.message };
     }
-  })
-  
+  });
 
-  ipcMain.handle('validate-login', async (event, username, master_pass) => {
-    const data = {
-      master_pass: master_pass,
-      username: username
-    }
+  ipcMain.handle('validate-login', async (_event, username, master_pass) => {
+    const data = { master_pass, username };
     try {
-      const response = await axios.post('http://localhost:5000/validate_login', data)
-      console.log(response.data)
-      return response.data
+      const response = await axios.post(`${SERVER_BASE_URL}/validate_login`, data);
+      console.log(response.data);
+      return response.data;
     } catch (error) {
-      throw error
+      console.error('Error in validate-login:', error.message);
+      return { error: error.message };
     }
-  })
+  });
 
-  ipcMain.handle('get-master-password', async (event) => {
+  ipcMain.handle('get-master-password', async () => {
     try {
-      const response = await axios.get('http://localhost:5000/get_master_password')
-      console.log(response.data.username) // Works!
-      return response.data
+      const response = await axios.get(`${SERVER_BASE_URL}/get_master_password`, {
+        headers: { 'Content-Type': 'application/json' },
+      });
+      console.log(response.data.username);
+      return response.data;
     } catch (error) {
-      throw error
+      console.error('Error in get-master-password:', error.message);
+      return { error: error.message };
     }
-  })
+  });
 
-  ipcMain.handle('add-password', async (event, data) => {
+  ipcMain.handle('add-password', async (_event, data) => {
     try {
-      const response = await axios.post('http://localhost:5000/add_password', data)
-      console.log(response.data)
-      return(response.data)
+      const response = await axios.post(`${SERVER_BASE_URL}/add_password`, data);
+      console.log(response.data);
+      return response.data;
     } catch (error) {
-      throw error
+      console.error('Error in add-password:', error.message);
+      return { error: error.message };
     }
-  })
+  });
 
-  // Deletion
-
-  // Show all
-  ipcMain.handle('display-all-passwords', async (event) => {
+  ipcMain.handle('display-all-passwords', async () => {
     try {
-      const response = await axios.get('http://localhost:5000/display_all_passwords')
-      console.log(response.data)
-      return(response.data)
+      const response = await axios.get(`${SERVER_BASE_URL}/display_all_passwords`);
+      console.log(response.data);
+      return response.data;
     } catch (error) {
-      throw error
+      console.error('Error in display-all-passwords:', error.message);
+      return { error: error.message };
     }
-  })
+  });
 
   if (process.env.NODE_ENV === 'development') {
-    win.loadURL('http://localhost:3000') // Not working :( but can just localhost :).
+    win.loadURL('http://localhost:3000');
   } else {
-    // Might be redundant.
     if (app.isPackaged) {
-      win.loadFile('./pack/index.html')
+      win.loadFile('./pack/index.html');
     } else {
-      // Not packaged.
-      await win.loadURL(`file://${path.join(__dirname, '../pack', 'index.html')}`)
+      await win.loadURL(`file://${path.join(__dirname, '../pack', 'index.html')}`);
     }
   }
-}
+};
 
-let flaskProcess
+let flaskProcess;
 
 const startFlaskPython = () => {
-  // Virtual environment.
+  const venvPath = path.join(__dirname, '../mac_venv'); // Mac
+  const pythonPath = path.join(venvPath, 'bin', 'python'); // Mac
+  const flaskPath = path.join(__dirname, '../db/db_flask_server.py');
 
-  const isWindows = process.platform === 'win32'
-  const isMac = process.platform === 'darwin' || os.platform() === 'darwin'
-
-  const venvPath = isWindows
-  ? path.join(__dirname, '../win_venv') // Windows
-  : isMac
-  ? path.join(__dirname, '../venv') // macOS
-  : path.join(__dirname, '../other_venv') // Other platformss
-
-  const pythonPath = isWindows
-  ? path.join(venvPath, 'Scripts', 'python.exe') // Windows
-  : isMac
-  ? path.join(venvPath, 'bin', 'python3') // macOS
-  : path.join(venvPath, 'bin', 'python3') // Default for non-Windows
-
-  const flaskPath = path.join(__dirname, '../db/db_flask_server.py')
-
-  console.log(".py")
-  // Py.
-  flaskProcess = spawn(pythonPath, ['-u', flaskPath])
+  console.log('.py');
+  flaskProcess = spawn(pythonPath, ['-u', flaskPath]);
 
   flaskProcess.stdout.on('data', (data) => {
-    if (data.includes('* Serving Flask app \'db_flask_server\'')) {
-      initDB()
+    const output = data.toString();
+    console.log(`Flask: ${output}`);
+    if (output.includes('* Running on')) {
+      console.log('Flask is ready. Initializing database...');
+      initDB();
     }
-  })
+  });
 
   flaskProcess.stderr.on('data', (data) => {
-    console.error(`Flask error: ${data}`)
-  })
-}
+    console.error(`Flask error: ${data.toString()}`);
+  });
+};
 
-let exePath
-if (app.isPackaged) {
-  exePath = path.join(process.resourcesPath, 'db_flask_server.exe')
-} else {
-  exePath = path.join(__dirname, '../db/dist/', 'db_flask_server.exe')
-}
+const exePath = app.isPackaged
+  ? path.join(process.resourcesPath, 'db_flask_server.exe')
+  : path.join(__dirname, '../db/dist/', 'db_flask_server.exe');
 
 const startFlaskExe = () => {
-  // Exe.
-  flaskProcess = spawn(exePath)
+  flaskProcess = spawn(exePath);
 
   flaskProcess.stdout.on('data', (data) => {
-    if (data.includes('* Serving Flask app \'db_flask_server\'')) {
-      initDB()
+    const output = data.toString();
+    console.log(`Flask (exe): ${output}`);
+    if (output.includes('* Running on')) {
+      console.log('Flask exe is ready. Initializing database...');
+      initDB();
     }
-  })
+  });
 
   flaskProcess.stderr.on('data', (data) => {
-    console.error(`Flask error: ${data}`)
-  })
-}
+    console.error(`Flask exe error: ${data.toString()}`);
+  });
+};
 
 app.whenReady().then(() => {
-  // startFlask includes flask and initDB()
   if (app.isPackaged) {
-    startFlaskExe()
+    startFlaskExe();
   } else {
-    startFlaskPython()
+    startFlaskPython();
   }
-  createWindow()
+  createWindow();
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {
-      createWindow()
+      createWindow();
     }
-  })
-})
+  });
+});
 
 app.on('before-quit', () => {
   if (flaskProcess) {
-    flaskProcess.kill()
+    flaskProcess.kill();
   }
-})
+});
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
-    app.quit()
+    app.quit();
   }
-})
+});
 
-const initDB = () => {
+const initDB = async () => {
   try {
-    axios.post('http://localhost:5000/init_db')
+    await axios.post(`${SERVER_BASE_URL}/init_db`);
+    console.log('Database initialized!');
   } catch (error) {
-    console.error('Error in main init-db:', error)
-    throw error
+    console.error('Error initializing database:', error.message);
   }
-}
+};
 
-// IPC.
-// InitDB.
-ipcMain.handle('init-db', async (event) => {
+ipcMain.handle('init-db', async () => {
   try {
-    const response = await axios.post('http://localhost:5000/init_db')
-    return 'Initialized!'
+    await axios.post(`${SERVER_BASE_URL}/init_db`);
+    return 'Initialized!';
   } catch (error) {
-    console.error('Error in main init-db:', error)
-    throw error
+    console.error('Error in init-db IPC handler:', error.message);
+    return { error: error.message };
   }
-})
+});
