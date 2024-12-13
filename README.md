@@ -1,7 +1,3 @@
-Scripts:
-  pack:main and pack:renderer
-  then start:electron
-  then package
+Integration spike for a locally hosted, SQL-based password manager.
 
-To-do:
-  figure out electron-forge exclusions, only pack required?
+See full project [here](https://github.com/cburkhardt27/password-manager-cs-370/).
